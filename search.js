@@ -23,8 +23,6 @@ function onYouTubeApiLoad() {
 
 function search(q) {
 
-    // var q = 'basketball';
-
     // Use the JavaScript client library to create a search.list() API call.
     var request = gapi.client.youtube.search.list({
         q: q,
@@ -43,20 +41,42 @@ function search(q) {
 
 // Called automatically with the response of the YouTube API request.
 function onSearchResponse(response) {
-    // showResponse(response);
-    console.log(response);
+  // showResponse(response);
+  console.log(response);
+  var videos = response.items;
 
-    var videos = response.items;
+  $.each( videos , function( index, video ) {
+    var videoID = video.id.videoId;
+    var thumb = video.snippet.thumbnails.medium.url;
+    var col   = $('<div class="col-video col-sm-6">');
+    var item  = $('<div class="video-item" data-video-id="">');
+    item.attr('data-video-id', videoID );
+    var embed = $('<div class="embed-responsive embed-responsive-16by9">');
+    // var iframe = '<iframe class="embed-responsive-item" width="560" height="315" src="https://www.youtube.com/embed/'+ videoID +'" frameborder="0" allowfullscreen></iframe>';
+    var image = $('<img>');
+    image.attr('src', thumb ).addClass('media-fluid');
 
-    $.each( videos , function( index, video ) {
+    // embed.append( iframe );
+    col.append( item.append(image) );
 
-      var videoID = video.id.videoId;
-      var iframe = '<iframe width="560" height="315" src="https://www.youtube.com/embed/'+ videoID +'" frameborder="0" allowfullscreen></iframe>';
+    // append columns to the #videos-row
+    $('#videos-row').append( col );
+  });
 
-      $('#videos-row').append(iframe);
+  $(document).on('click', '.video-item', function(event) {
+    event.preventDefault();
+
+    var videoId = $(this).attr('data-video-id');
+    var videoSrc = 'https://www.youtube.com/embed/'+ videoId + '?autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0';
+
+    $('#modal-video .embed-responsive-item').attr( 'src', videoSrc );
+    $('#modal-video').modal();
+  });
 
 
-    });
-
+  // Stops Video from playing when closed
+  $('#modal-video').on('hide.bs.modal', function (e) {
+    $('#modal-video .embed-responsive-item').attr( 'src', '' );
+  })
 
 }
